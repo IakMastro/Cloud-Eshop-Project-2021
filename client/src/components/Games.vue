@@ -31,8 +31,8 @@
                 <button
                   type="button"
                   class="btn btn-warning btn-sm"
-                  @click="editGame(game)"
-                  v-b-modal.game-update-modal>
+                  v-b-modal.game-update-modal
+                   @click="editGame(game)">
                   Update
                 </button>
                 <button
@@ -75,7 +75,7 @@
         </b-form-group>
         <b-form-group id="form-read-group">
           <b-form-checkbox-group v-model="addGameForm.favoured" id="form-checks">
-            <b-form-checkbox value="false">Favoured?</b-form-checkbox>
+            <b-form-checkbox value="true">Favoured?</b-form-checkbox>
           </b-form-checkbox-group>
         </b-form-group>
         <b-button-group>
@@ -89,29 +89,29 @@
              title="Update"
              hide-footer>
       <b-form @submit="onSubmitUpdate" @reset="onResetUpdate" class="w-100">
-        <b-form-group id="form-title-group"
+      <b-form-group id="form-title-edit-group"
                       label="Title:"
-                      label-for="form-title-input">
-          <b-form-input id="form-title-input"
+                      label-for="form-title-edit-input">
+          <b-form-input id="form-title-edit-input"
                         type="text"
-                        v-model="addGameForm.title"
+                        v-model="editForm.title"
                         required
                         placeholder="Enter title">
           </b-form-input>
         </b-form-group>
-        <b-form-group id="form-title-group"
+        <b-form-group id="form-developer-edit-group"
                       label="Developer:"
-                      label-for="form-developer-input">
-          <b-form-input id="form-developer-input"
+                      label-for="form-developer-edit-input">
+          <b-form-input id="form-developer-edit-input"
                         type="text"
-                        v-model="addGameForm.developer"
+                        v-model="editForm.developer"
                         required
                         placeholder="Enter developer">
           </b-form-input>
         </b-form-group>
         <b-form-group id="form-read-group">
-          <b-form-checkbox-group v-model="addGameForm.favoured" id="form-checks">
-            <b-form-checkbox value="false">Favoured?</b-form-checkbox>
+          <b-form-checkbox-group v-model="editForm.favoured" id="form-checks">
+            <b-form-checkbox value="true">Favoured?</b-form-checkbox>
           </b-form-checkbox-group>
         </b-form-group>
         <b-button-group>
