@@ -6,7 +6,11 @@
         <hr>
         <br><br>
         <alert :message="message" v-if="showMessage"></alert>
-        <button type="button" class="btn btn-primary btn-sm" v-b-modal.game-modal>Add Game</button>
+        <button type="button"
+                class="btn btn-primary btn-sm"
+                v-b-modal.game-modal>
+          Add Game
+        </button>
         <br><br>
         <table class="table table-hover">
           <thead>
@@ -28,17 +32,15 @@
             </td>
             <td>
               <div class="btn-group" role="group">
-                <button
-                  type="button"
-                  class="btn btn-warning btn-sm"
-                  v-b-modal.game-update-modal
-                   @click="editGame(game)">
+                <button type="button"
+                        class="btn btn-warning btn-sm"
+                        v-b-modal.game-modal
+                        @click="editGame(game)">
                   Update
                 </button>
-                <button
-                  type="button"
-                  class="btn btn-danger btn-sm"
-                  @click="onDeleteGame(game.id)">
+                <button type="button"
+                        class="btn btn-danger btn-sm"
+                        @click="onDeleteGame(game.id)">
                   Delete
                 </button>
               </div>
@@ -58,7 +60,7 @@
                       label-for="form-title-input">
           <b-form-input id="form-title-input"
                         type="text"
-                        v-model="addGameForm.title"
+                        v-model="gameForm.title"
                         required
                         placeholder="Enter title">
           </b-form-input>
@@ -68,49 +70,13 @@
                       label-for="form-developer-input">
           <b-form-input id="form-developer-input"
                         type="text"
-                        v-model="addGameForm.developer"
+                        v-model="gameForm.developer"
                         required
                         placeholder="Enter developer">
           </b-form-input>
         </b-form-group>
         <b-form-group id="form-read-group">
-          <b-form-checkbox-group v-model="addGameForm.favoured" id="form-checks">
-            <b-form-checkbox value="true">Favoured?</b-form-checkbox>
-          </b-form-checkbox-group>
-        </b-form-group>
-        <b-button-group>
-          <b-button type="submit" variant="primary">Submit</b-button>
-          <b-button type="reset" variant="danger">Reset</b-button>
-        </b-button-group>
-      </b-form>
-    </b-modal>
-    <b-modal ref="editGameModal"
-             id="game-update-modal"
-             title="Update"
-             hide-footer>
-      <b-form @submit="onSubmitUpdate" @reset="onResetUpdate" class="w-100">
-      <b-form-group id="form-title-edit-group"
-                      label="Title:"
-                      label-for="form-title-edit-input">
-          <b-form-input id="form-title-edit-input"
-                        type="text"
-                        v-model="editForm.title"
-                        required
-                        placeholder="Enter title">
-          </b-form-input>
-        </b-form-group>
-        <b-form-group id="form-developer-edit-group"
-                      label="Developer:"
-                      label-for="form-developer-edit-input">
-          <b-form-input id="form-developer-edit-input"
-                        type="text"
-                        v-model="editForm.developer"
-                        required
-                        placeholder="Enter developer">
-          </b-form-input>
-        </b-form-group>
-        <b-form-group id="form-read-group">
-          <b-form-checkbox-group v-model="editForm.favoured" id="form-checks">
+          <b-form-checkbox-group v-model="gameForm.favoured" id="form-checks">
             <b-form-checkbox value="true">Favoured?</b-form-checkbox>
           </b-form-checkbox-group>
         </b-form-group>
@@ -128,31 +94,33 @@ import axios from 'axios';
 import Alert from './Alert.vue';
 
 export default {
+  // Data used on this page
   data() {
     return {
       games: [],
-      addGameForm: {
-        title: '',
-        developer: '',
-        favoured: [],
-      },
-      editForm: {
+      gameForm: {
         id: '',
         title: '',
         developer: '',
         favoured: [],
+        edit: [],
       },
       message: '',
       showMessage: false,
+      path: 'http://localhost:5000/admin',
     };
   },
+
+  // Templates that exist on other file
   components: {
     alert: Alert,
   },
+
+  // Methods used on this page
   methods: {
+    // Get: gets all the games
     getGames() {
-      const path = 'http://localhost:5000/games';
-      axios.get(path)
+      axios.get(this.path)
         .then((res) => {
           this.games = res.data.games;
         })
@@ -160,9 +128,10 @@ export default {
           console.error(error);
         });
     },
+
+    // Post: adds a new game on the database
     addGame(payload) {
-      const path = 'http://localhost:5000/games';
-      axios.post(path, payload)
+      axios.post(this.path, payload)
         .then(() => {
           this.getGames();
           this.message = 'Game added!';
@@ -170,58 +139,58 @@ export default {
         })
         .catch((error) => {
           console.log(error);
+          this.message = 'No connection to server';
+          this.showMessage = true;
           this.getGames();
         });
     },
+
+    // Initialize the form
     initForm() {
-      this.addGameForm.title = '';
-      this.addGameForm.developer = '';
-      this.addGameForm.favoured = [];
-      this.editForm.id = '';
-      this.editForm.title = '';
-      this.editForm.developer = '';
-      this.editForm.favoured = [];
+      this.gameForm.id = '';
+      this.gameForm.title = '';
+      this.gameForm.developer = '';
+      this.gameForm.favoured = [];
+      this.gameForm.edit = false;
     },
+
+    // Submitting the form
     onsubmit(evt) {
       evt.preventDefault();
       this.$refs.addGameModal.hide();
 
       let favoured = false;
 
-      if (this.addGameForm.favoured[0]) favoured = true;
+      if (this.gameForm.favoured[0]) favoured = true;
 
       const payload = {
-        title: this.addGameForm.title,
-        developer: this.addGameForm.developer,
+        id: this.gameForm.id,
+        title: this.gameForm.title,
+        developer: this.gameForm.developer,
         favoured,
       };
 
-      this.addGame(payload);
+      // If the form we completed is for editing, then updateGame works.
+      // Otherwise, it adds the game.
+      if (this.gameForm.edit) {
+        this.updateGame(payload, payload.id);
+      } else {
+        this.addGame(payload);
+      }
+
       this.initForm();
     },
+
+    // Resets the form, in case of a mistake
     onreset(evt) {
       evt.preventDefault();
       this.$refs.addGameModal.hide();
       this.initForm();
     },
-    onSubmitUpdate(evt) {
-      evt.preventDefault();
-      this.$refs.editGameModal.hide();
 
-      let favoured = false;
-
-      if (this.editForm.read[0]) favoured = true;
-
-      const payload = {
-        title: this.editForm.title,
-        developer: this.editForm.developer,
-        favoured,
-      };
-
-      this.updateGame(payload, this.editForm.id);
-    },
+    // Put: updates the info for the selected game.
     updateGame(payload, gameId) {
-      const path = `http://localhost:5000/games/${gameId}`;
+      const path = this.path.concat(`/${gameId}`);
       axios.put(path, payload)
         .then(() => {
           this.getGames();
@@ -233,14 +202,10 @@ export default {
           this.getGames();
         });
     },
-    onResetUpdate(evt) {
-      evt.preventDefault();
-      this.$refs.editGameModal.hide();
-      this.initForm();
-      this.getGames();
-    },
+
+    // Delete: deletes the game from the database
     removeGame(gameID) {
-      const path = `http://localhost:5000/games/${gameID}`;
+      const path = this.path.concat(`/${gameID}`);
 
       axios.delete(path)
         .then(() => {
@@ -249,17 +214,24 @@ export default {
           this.showMessage = true;
         })
         .catch((error) => {
-          console.log(error);
+          console.error(error);
           this.getGames();
         });
     },
+
+    // Removes the game from the array locally.
     onDeleteGame(game) {
       this.removeGame(game);
     },
+
+    // It's called to get the info for the game to be edited.
     editGame(game) {
-      this.editForm = game;
+      this.gameForm = game;
+      this.gameForm.edit = true;
     },
   },
+
+  // It is used when the page is loaded for the first time.
   created() {
     this.getGames();
   },

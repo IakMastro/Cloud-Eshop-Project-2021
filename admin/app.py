@@ -43,7 +43,7 @@ def ping_pong():
 
 
 # Routing
-@app.route('/games', methods=['GET', 'POST'])
+@app.route('/admin', methods=['GET', 'POST'])
 def all_games():
     response_object = {'status': 'success'}
 
@@ -74,9 +74,7 @@ def remove_game(game_id):
     return False
 
 
-
-
-@app.route('/games/<game_id>', methods=['PUT', 'DELETE'])
+@app.route('/admin/<game_id>', methods=['PUT', 'DELETE'])
 def single_game(game_id):
     response_object = {'status': 'success'}
 
@@ -98,7 +96,6 @@ def single_game(game_id):
         response_object['message'] = 'Game removed!'
 
     return jsonify(response_object)
-
 
 
 if __name__ == '__main__':

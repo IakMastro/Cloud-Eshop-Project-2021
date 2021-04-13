@@ -1,7 +1,7 @@
 import Vue from 'vue';
 import VueRouter, { RouteConfig } from 'vue-router';
 import Ping from '../components/Ping.vue';
-import Games from '../components/Games.vue';
+import Admin from '../components/Admin.vue';
 
 Vue.use(VueRouter);
 
@@ -13,8 +13,8 @@ const routes: Array<RouteConfig> = [
   },
   {
     path: '/',
-    name: 'Games',
-    component: Games,
+    name: 'Admin',
+    component: Admin,
   },
 ];
 
