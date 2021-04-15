@@ -1,21 +1,21 @@
 import Vue from 'vue';
 import VueRouter, { RouteConfig } from 'vue-router';
-import Ping from '../components/Ping.vue';
 import Admin from '../components/Admin.vue';
+import Users from '../components/Users.vue';
 
 Vue.use(VueRouter);
 
 const routes: Array<RouteConfig> = [
   {
-    path: '/ping',
-    name: 'Ping',
-    component: Ping,
-  },
-  {
-    path: '/',
+    path: '/admin',
     name: 'Admin',
     component: Admin,
   },
+  {
+    path: '/login',
+    name: 'Users',
+    component: Users
+  }
 ];
 
 export default new VueRouter({

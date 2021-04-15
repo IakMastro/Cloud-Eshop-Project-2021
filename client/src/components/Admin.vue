@@ -65,7 +65,7 @@
                         placeholder="Enter title">
           </b-form-input>
         </b-form-group>
-        <b-form-group id="form-title-group"
+        <b-form-group id="form-developer-group"
                       label="Developer:"
                       label-for="form-developer-input">
           <b-form-input id="form-developer-input"
