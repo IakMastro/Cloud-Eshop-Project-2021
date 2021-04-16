@@ -1,5 +1,6 @@
 <template>
   <div class="container">
+    <navbar></navbar>
     <div class="row">
       <div class="col-sm-10">
         <div v-if="loggedIn">
@@ -15,13 +16,13 @@
           <h1>Log In</h1>
           <hr>
           <br><br>
-          <alert :message="message" v-if="showMessage"></alert>
           <h3>Welcome back!</h3>
           <button type="button"
                   class="btn btn-primary"
                   v-b-modal.login-modal>
             Log In
           </button>
+          <alert :message="message" v-if="showMessage"></alert>
           <hr>
           <br><br>
           <h3>New here?</h3>
@@ -69,6 +70,7 @@
 <script>
 import axios from 'axios';
 import Alert from './Alert.vue';
+import Navbar from './Navbar.vue';
 
 export default {
   data() {
@@ -87,6 +89,7 @@ export default {
 
   components: {
     Alert,
+    Navbar,
   },
 
   methods: {
