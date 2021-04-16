@@ -154,6 +154,14 @@ export default {
       this.gameForm.edit = false;
     },
 
+    // Initialize form after Reset
+    initResetForm() {
+      this.gameForm.title = '';
+      this.gameForm.developer = '';
+      this.gameForm.favoured = [];
+      this.gameForm.edit = true;
+    },
+
     // Submitting the form
     onsubmit(evt) {
       evt.preventDefault();
@@ -184,8 +192,7 @@ export default {
     // Resets the form, in case of a mistake
     onreset(evt) {
       evt.preventDefault();
-      this.$refs.addGameModal.hide();
-      this.initForm();
+      this.initResetForm();
     },
 
     // Put: updates the info for the selected game.
