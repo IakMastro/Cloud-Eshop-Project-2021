@@ -33,6 +33,12 @@ GAMES = [
         'developer': 'Infinity Ward',
         'favoured': False
     },
+    {
+        'id': uuid.uuid4().hex,
+        'title': 'Persona 4 Golden Edition',
+        'developer': 'Atlus',
+        'favoured': True
+    },
 ]
 
 
