@@ -1,13 +1,71 @@
 <template>
+ <!-- Navbar -->
+ <div>
+          <nav class="navbar navbar-expand-lg fixed-top">
+            <!-- Container wrapper -->
+            <div class="container-fluid">
+              <!-- Navbar brand -->
+              <!-- Toggle button -->
+              <button
+                class="navbar-toggler"
+                type="button"
+                data-mdb-toggle="collapse"
+                data-mdb-target="#navbarSupportedContent"
+                aria-controls="navbarSupportedContent"
+                aria-expanded="false"
+                aria-label="Toggle navigation"
+              >
+                <i class="fas fa-bars"></i>
+              </button>
+              <!-- Collapsible wrapper -->
+              <div class="collapse navbar-collapse" id="navbarSupportedContent">
+               <!-- Left links -->
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                  <li class="nav-item">
+                    <a class="nav-link active" aria-current="page" href="http://localhost:8080/admin">HOME</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="#">LIBRARY</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="#">FAVOURITES</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="http://localhost:8080/login">EXIT</a>
+                  </li>
+                </ul>
+                <!-- Search form -->
+                <a class="navbar-brand"></a>
+                <form class="d-flex input-group w-auto">
+                  <input
+                    type="search"
+                    class="form-control"
+                    placeholder="Type query"
+                    aria-label="Search"
+                  />
+                  <button
+                    class="btn btn-danger"
+                    type="button"
+                    data-mdb-ripple-color="dark"
+                  >
+                    Search
+                  </button>
+                </form>
+              </div>
+              <!-- Collapsible wrapper -->
+            </div>
+            <!-- Container wrapper -->
+          </nav>
+          <!-- Navbar -->
   <div class="container">
     <div class="row">
-      <div class="col-sm-10">
+      <div class="col-sm-20">
         <h1>Games</h1>
         <hr>
         <br><br>
         <alert :message="message" v-if="showMessage"></alert>
         <button type="button"
-                class="btn btn-primary btn-sm"
+                class="btn btn-danger btn-md"
                 v-b-modal.game-modal>
           Add Game
         </button>
@@ -33,7 +91,7 @@
             <td>
               <div class="btn-group" role="group">
                 <button type="button"
-                        class="btn btn-warning btn-sm"
+                        class="btn btn-info btn-sm"
                         v-b-modal.game-modal
                         @click="editGame(game)">
                   Update
@@ -86,6 +144,7 @@
         </b-button-group>
       </b-form>
     </b-modal>
+  </div>
   </div>
 </template>
 
