@@ -1,0 +1,26 @@
+# Yaml compose version
+version: "3.8"
+
+# Services used on the swarm
+services:
+  # Client service (TODO: is broken)
+#  client:
+#    build: client
+#    ports:
+#      - "8080:8080"
+#    volumes:
+#      - .:/client
+
+  # Admin service
+  admin:
+    # Docker image
+    build: admin
+    # Port forward to 5000 (not permanent, most likely it will change)
+    ports:
+      - "5000:5000"
+    # Real time developing on this volume (hard link, remember from OS1)
+    volumes:
+      - .:/admin
+    # Flask environment (it will be removed)
+    environment:
+      FLASK_ENV: development
