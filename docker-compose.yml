@@ -33,3 +33,19 @@ services:
       FLASK_APP: admin
       FLASK_RUN_HOST: 0.0.0.0
       FLASK_ENV: development
+
+  # Users service
+  users:
+    # Docker image
+    build: users
+    # Port forward to 5001 (5000 is busy by the admin service)
+    ports:
+      - "5001:5000"
+    # Real time developing on this volume
+    volumes:
+      - ./users:/users
+    # Flask environment
+    environment:
+      FLASK_APP: users
+      FLASK_RUN_HOST: 0.0.0.0
+      FLASK_ENV: development

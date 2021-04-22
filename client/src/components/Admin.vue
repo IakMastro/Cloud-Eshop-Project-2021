@@ -155,8 +155,6 @@ export default {
       this.gameForm.developer = '';
       this.gameForm.favoured = [];
       this.gameForm.edit = false;
-
-      this.getGames();
     },
 
     // Submitting the form
