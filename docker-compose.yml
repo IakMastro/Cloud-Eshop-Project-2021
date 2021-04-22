@@ -3,13 +3,20 @@ version: "3.8"
 
 # Services used on the swarm
 services:
-  # Client service (TODO: is broken)
-#  client:
-#    build: client
-#    ports:
-#      - "8080:8080"
-#    volumes:
-#      - .:/client
+  # Client service
+  client:
+    # Docker image
+    build: client
+    # Port forward to 8080
+    ports:
+      - "8080:8080"
+    # Real time developing on this volume
+    volumes:
+      - ./client:/client
+    # NodeJS environment
+    environment:
+      NODE_APP: client
+      NODE_ENV: development
 
   # Admin service
   admin:
@@ -20,7 +27,9 @@ services:
       - "5000:5000"
     # Real time developing on this volume (hard link, remember from OS1)
     volumes:
-      - .:/admin
-    # Flask environment (it will be removed)
+      - ./admin:/admin
+    # Flask environment
     environment:
+      FLASK_APP: admin
+      FLASK_RUN_HOST: 0.0.0.0
       FLASK_ENV: development

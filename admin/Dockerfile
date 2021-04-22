@@ -14,7 +14,7 @@ RUN pip install -r requirements.txt
 
 # Expose the port 5000
 EXPOSE 5000
-COPY . .
+COPY admin.py .
 
 # Run the app
 CMD ["flask", "run"]

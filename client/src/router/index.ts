@@ -14,8 +14,8 @@ const routes: Array<RouteConfig> = [
   {
     path: '/login',
     name: 'Users',
-    component: Users
-  }
+    component: Users,
+  },
 ];
 
 export default new VueRouter({
