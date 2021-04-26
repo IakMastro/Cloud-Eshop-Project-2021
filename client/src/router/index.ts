@@ -2,6 +2,7 @@ import Vue from 'vue';
 import VueRouter, { RouteConfig } from 'vue-router';
 import Admin from '../components/Admin.vue';
 import Users from '../components/Users.vue';
+import Library from '../components/Library.vue';
 
 Vue.use(VueRouter);
 
@@ -15,6 +16,11 @@ const routes: Array<RouteConfig> = [
     path: '/login',
     name: 'Users',
     component: Users,
+  },
+  {
+    path: '/library',
+    name: 'Library',
+    component: Library,
   },
 ];
 

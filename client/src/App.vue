@@ -11,9 +11,24 @@
 }
 
 h1 {
-  color: blue;
-  margin: -10px;
+  color: black;
+  margin:  400px;
   padding: 10px;
 }
 
+h2 {
+  color: black;
+  margin: 450px;
+  padding: 10px;
+  font-size: large;
+}
+tr{
+color:black;
+font-size: 150%;
+
+}
+tr2{
+color:black;
+font-size: 150%;
+}
 </style>

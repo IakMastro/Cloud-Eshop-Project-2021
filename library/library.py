@@ -29,8 +29,8 @@ USERS = [
 ]
 
 
-@app.route('/login', methods=['PUT'])
-def login():
+@app.route('/library', methods=['PUT'])
+def library():
     response_object = {'status': 'success'}
     post_data = request.get_json()
 

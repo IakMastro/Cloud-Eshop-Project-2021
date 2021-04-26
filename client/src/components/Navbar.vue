@@ -25,7 +25,7 @@
               <a class="nav-link active" aria-current="page" href="/admin">HOME</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="#">LIBRARY</a>
+              <a class="nav-link" href="/library">LIBRARY</a>
             </li>
             <li class="nav-item">
               <a class="nav-link" href="#">FAVOURITES</a>
