@@ -1,10 +1,12 @@
 <template>
   <!-- Navbar -->
   <div>
+
     <nav class="navbar navbar-expand-lg fixed-top">
       <!-- Container wrapper -->
       <div class="container-fluid">
         <!-- Navbar brand -->
+        <a class="navbar-brand" href="/">Game Store</a>
         <!-- Toggle button -->
         <button
           class="navbar-toggler"
@@ -22,35 +24,15 @@
           <!-- Left links -->
           <ul class="navbar-nav me-auto mb-2 mb-lg-0">
             <li class="nav-item">
-              <a class="nav-link active" aria-current="page" href="/admin">HOME</a>
+              <a class="nav-link" href="/library">Library</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="/library">LIBRARY</a>
+              <a class="nav-link" href="/admin">Admin</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="#">FAVOURITES</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="/login">EXIT</a>
+              <a class="nav-link" href="/login">Log In</a>
             </li>
           </ul>
-          <!-- Search form -->
-          <a class="navbar-brand"></a>
-          <form class="d-flex input-group w-auto">
-            <input
-              type="search"
-              class="form-control"
-              placeholder="Type query"
-              aria-label="Search"
-            />
-            <button
-              class="btn btn-danger"
-              type="button"
-              data-mdb-ripple-color="dark"
-            >
-              Search
-            </button>
-          </form>
         </div>
         <!-- Collapsible wrapper -->
       </div>
@@ -75,11 +57,9 @@ export default {
 
 /* Navigation links */
 .navbar a {
-  float: center;
   padding: 20px;
   color: white;
   text-decoration: none;
   font-size: 18px;
-  text-align: center;
 }
 </style>

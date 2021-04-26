@@ -10,10 +10,10 @@
         <br><br>
         <table class="table table-hover">
           <thead>
-          <tr2>
+          <tr>
             <th scope="col">OWNED GAMES</th>
             <th></th>
-          </tr2>
+          </tr>
           </thead>
           <tbody>
           <tr>
