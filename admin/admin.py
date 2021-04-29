@@ -19,25 +19,29 @@ GAMES = [
         'id': uuid.uuid4().hex,
         'title': 'Metal Gear Solid 3: Snake Eater',
         'developer': 'Kojima',
-        'favoured': True
+        'genre': 'SA',
+        'favourite': True
     },
     {
         'id': uuid.uuid4().hex,
         'title': 'Yakuza 0',
         'developer': 'Ryu Ga Gotoku Studios',
-        'favoured': True
+        'genre': 'RPG',
+        'favourite': True
     },
     {
         'id': uuid.uuid4().hex,
         'title': 'Call Of Duty: Modern Warfare (2019)',
         'developer': 'Infinity Ward',
-        'favoured': False
+        'genre': 'FPS',
+        'favourite': False
     },
     {
         'id': uuid.uuid4().hex,
         'title': 'Persona 4 Golden Edition',
         'developer': 'Atlus',
-        'favoured': True
+        'genre': 'JRPG',
+        'favourite': True
     },
 ]
 
@@ -60,7 +64,8 @@ def all_games():
             'id': uuid.uuid4().hex,
             'title': post_data.get('title'),
             'developer': post_data.get('developer'),
-            'favoured': post_data.get('favoured'),
+            'genre': post_data.get('genre'),
+            'favourite': post_data.get('favourite')
         })
 
         response_object['message'] = 'Game added!'
@@ -92,7 +97,8 @@ def single_game(game_id):
             'id': uuid.uuid4().hex,
             'title': post_data.get('title'),
             'developer': post_data.get('developer'),
-            'favoured': post_data.get('favoured')
+            'genre': post_data.get('genre'),
+            'favourite': post_data.get('favourite')
         })
 
         response_object['message'] = 'Game updated!'

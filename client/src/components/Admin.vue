@@ -8,7 +8,7 @@
         <br><br>
         <alert :message="message" v-if="showMessage"></alert>
         <button type="button"
-                class="btn btn-danger btn-md"
+                class="btn btn-success btn-md"
                 v-b-modal.game-modal>
           Add Game
         </button>
@@ -18,7 +18,7 @@
           <tr>
             <th scope="col">Title</th>
             <th scope="col">Developer</th>
-            <th scope="col">Favoured?</th>
+            <th scope="col">Genre</th>
             <th></th>
           </tr>
           </thead>
@@ -27,10 +27,7 @@
           <tr v-for="(game, index) in games" :key="index">
             <td>{{ game.title }}</td>
             <td>{{ game.developer }}</td>
-            <td>
-              <span v-if="game.favoured">Yes</span>
-              <span v-else>No</span>
-            </td>
+           <td>{{ game.genre }}</td>
             <td>
               <div class="btn-group" role="group">
                 <button type="button"
@@ -76,10 +73,15 @@
                         placeholder="Enter developer">
           </b-form-input>
         </b-form-group>
-        <b-form-group id="form-read-group">
-          <b-form-checkbox-group v-model="gameForm.favoured" id="form-checks">
-            <b-form-checkbox value="true">Favoured?</b-form-checkbox>
-          </b-form-checkbox-group>
+        <b-form-group id="form-genre-group"
+                      label="Genre:"
+                      label-for="form-genre-input">
+          <b-form-input id="form-genre-input"
+                        type="text"
+                        v-model="gameForm.genre"
+                        required
+                        placeholder="Enter genre">
+          </b-form-input>
         </b-form-group>
         <b-button-group>
           <b-button type="submit" variant="primary">Submit</b-button>
@@ -104,7 +106,7 @@ export default {
         id: '',
         title: '',
         developer: '',
-        favoured: [],
+        genre: '',
         edit: [],
       },
       message: '',
@@ -153,7 +155,7 @@ export default {
       this.gameForm.id = '';
       this.gameForm.title = '';
       this.gameForm.developer = '';
-      this.gameForm.favoured = [];
+      this.gameForm.genre = '';
       this.gameForm.edit = false;
     },
 
@@ -162,15 +164,12 @@ export default {
       evt.preventDefault();
       this.$refs.addGameModal.hide();
 
-      let favoured = false;
-
-      if (this.gameForm.favoured[0]) favoured = true;
-
       const payload = {
         id: this.gameForm.id,
         title: this.gameForm.title,
         developer: this.gameForm.developer,
-        favoured,
+        genre: this.gameForm.genre,
+
       };
 
       // If the form we completed is for editing, then updateGame works.
@@ -178,6 +177,7 @@ export default {
       if (this.gameForm.edit) {
         this.updateGame(payload, payload.id);
       } else {
+        this.initForm();
         this.addGame(payload);
       }
 
@@ -239,3 +239,12 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+
+tr{
+background-color:white;
+
+}
+
+</style>
