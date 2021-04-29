@@ -51,7 +51,7 @@ services:
       driver: "fluentd"
       options:
         fluentd-address: localhost:24224
-        tag: log.users
+        tag: log.admin
 
   # Users service
   users:

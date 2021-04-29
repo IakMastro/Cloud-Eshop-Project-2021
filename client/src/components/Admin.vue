@@ -27,7 +27,7 @@
           <tr v-for="(game, index) in games" :key="index">
             <td>{{ game.title }}</td>
             <td>{{ game.developer }}</td>
-           <td>{{ game.genre }}</td>
+            <td>{{ game.genre }}</td>
             <td>
               <div class="btn-group" role="group">
                 <button type="button"
@@ -242,8 +242,8 @@ export default {
 
 <style scoped>
 
-tr{
-background-color:white;
+tr {
+  background-color: white;
 
 }
 
