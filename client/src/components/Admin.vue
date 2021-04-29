@@ -107,7 +107,7 @@ export default {
         title: '',
         developer: '',
         genre: '',
-        edit: [],
+        edit: false,
       },
       message: '',
       showMessage: false,
@@ -169,7 +169,6 @@ export default {
         title: this.gameForm.title,
         developer: this.gameForm.developer,
         genre: this.gameForm.genre,
-
       };
 
       // If the form we completed is for editing, then updateGame works.
@@ -177,7 +176,6 @@ export default {
       if (this.gameForm.edit) {
         this.updateGame(payload, payload.id);
       } else {
-        this.initForm();
         this.addGame(payload);
       }
 
