@@ -12,6 +12,7 @@
           <thead>
           <tr>
             <th scope="col">OWNED GAMES</th>
+            <th scope="col">FAVOURITE</th>
             <th></th>
           </tr>
           </thead>
@@ -19,6 +20,22 @@
           <tr>
           <tr v-for="(game, index) in games" :key="index">
             <td>{{ game.title }}</td>
+           <td>
+           <label
+                class="favorite__heart"
+                v-bind:class="{'favorite__heart__selected': value, 'is-disabled': disabled}"
+                v-on:click="favorite">
+            <input
+                    class="favorite__checkbox"
+                    type="checkbox"
+                    v-bind:name="name"
+                    v-bind:value="value"
+                    v-bind:required="required"
+                    v-bind:disabled="disabled"
+                    v-model="value">
+            &#10084;&#65039;
+        </label>
+              </td>
             <td>
             </td>
           </tr>
@@ -28,8 +45,8 @@
     </div>
   </div>
 </template>
-
 <script>
+
 import axios from 'axios';
 import Navbar from './Navbar.vue';
 
@@ -42,7 +59,7 @@ export default {
         id: '',
         title: '',
         developer: '',
-        favoured: [],
+        favourite: [],
         edit: [],
       },
       message: '',
@@ -55,9 +72,12 @@ export default {
   components: {
     navbar: Navbar,
   },
-
+  props: ['is_fav'],
   // Methods used on this page
   methods: {
+    togglefav() {
+      this.$emit('togglefav', !this.is_fav);
+    },
     // Get: gets all the games
     getGames() {
       axios.get(this.path)
