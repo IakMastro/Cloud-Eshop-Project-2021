@@ -17,15 +17,27 @@ services:
     environment:
       NODE_APP: client
       NODE_ENV: development
+    # Linked containers to client
+    links:
+      - admin
+      - users
+      - fluentd
+    # Logging driver (loads fluentd container)
+    logging:
+      driver: "fluentd"
+      options:
+        # Fluentd address
+        fluentd-address: localhost:24224
+        # Tag that fluentd sees
+        tag: log.client
 
   # Admin service
   admin:
     # Docker image
     build: admin
-    # Port forward to 5000 (not permanent, most likely it will change)
+    # Port forward to 5000
     ports:
       - "5000:5000"
-    # Real time developing on this volume (hard link, remember from OS1)
     volumes:
       - ./admin:/admin
     # Flask environment
@@ -33,6 +45,13 @@ services:
       FLASK_APP: admin
       FLASK_RUN_HOST: 0.0.0.0
       FLASK_ENV: development
+    links:
+      - fluentd
+    logging:
+      driver: "fluentd"
+      options:
+        fluentd-address: localhost:24224
+        tag: log.users
 
   # Users service
   users:
@@ -41,7 +60,6 @@ services:
     # Port forward to 5001 (5000 is busy by the admin service)
     ports:
       - "5001:5000"
-    # Real time developing on this volume
     volumes:
       - ./users:/users
     # Flask environment
@@ -49,3 +67,42 @@ services:
       FLASK_APP: users
       FLASK_RUN_HOST: 0.0.0.0
       FLASK_ENV: development
+    links:
+      - fluentd
+    logging:
+      driver: "fluentd"
+      options:
+        fluentd-address: localhost:24224
+        tag: log.users
+
+  # Fluentd service
+  fluentd:
+    build: logs
+    volumes:
+      - ./logs/conf:/fluentd/etc
+    # Linked to elasticsearch service
+    links:
+      - "elasticsearch"
+    # Port forwarded
+    ports:
+      - "24224:24224"
+      - "24224:24224/udp"
+
+  # Elasticsearch service
+  elasticsearch:
+    # Pull the image from the web
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.10.2
+    environment:
+      - "discovery.type=single-node"
+    expose:
+      - "9200"
+    ports:
+      - "9200:9200"
+
+  # Kibana service
+  kibana:
+    image: kibana:7.10.1
+    links:
+      - "elasticsearch"
+    ports:
+      - "5601:5601"
