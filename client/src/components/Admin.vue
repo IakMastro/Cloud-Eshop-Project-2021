@@ -27,7 +27,7 @@
           <tr v-for="(game, index) in games" :key="index">
             <td>{{ game.title }}</td>
             <td>{{ game.developer }}</td>
-            <td>{{ game.genre }}</td>
+           <td>{{ game.genre }}</td>
             <td>
               <div class="btn-group" role="group">
                 <button type="button"
@@ -107,7 +107,7 @@ export default {
         title: '',
         developer: '',
         genre: '',
-        edit: false,
+        edit: [],
       },
       message: '',
       showMessage: false,
@@ -169,6 +169,7 @@ export default {
         title: this.gameForm.title,
         developer: this.gameForm.developer,
         genre: this.gameForm.genre,
+
       };
 
       // If the form we completed is for editing, then updateGame works.
@@ -176,6 +177,7 @@ export default {
       if (this.gameForm.edit) {
         this.updateGame(payload, payload.id);
       } else {
+        this.initForm();
         this.addGame(payload);
       }
 
@@ -240,8 +242,8 @@ export default {
 
 <style scoped>
 
-tr {
-  background-color: white;
+tr{
+background-color:white;
 
 }
 
