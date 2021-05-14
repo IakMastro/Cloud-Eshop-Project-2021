@@ -2,6 +2,7 @@ import uuid
 
 from flask import Flask, jsonify, request
 from flask_cors import CORS
+import pymongo
 
 # Configuration
 DEBUG = True
@@ -10,40 +11,12 @@ DEBUG = True
 app = Flask(__name__)
 app.config.from_object(__name__)
 
+# Mongodb connection initialization to database gameStore
+db = pymongo.MongoClient("mongodb://datinguser:datinguserpasswd@mongodb:27017/")['gameStore']
+
 # Enable CORS (CORS is a library that enables cross-origin requests)
 # For example different protocol, IP address, domain name or port
 CORS(app, resources={r'/*': {'origins': '*'}})
-
-GAMES = [
-    {
-        'id': uuid.uuid4().hex,
-        'title': 'Metal Gear Solid 3: Snake Eater',
-        'developer': 'Kojima',
-        'genre': 'SA',
-        'favourite': True
-    },
-    {
-        'id': uuid.uuid4().hex,
-        'title': 'Yakuza 0',
-        'developer': 'Ryu Ga Gotoku Studios',
-        'genre': 'RPG',
-        'favourite': True
-    },
-    {
-        'id': uuid.uuid4().hex,
-        'title': 'Call Of Duty: Modern Warfare (2019)',
-        'developer': 'Infinity Ward',
-        'genre': 'FPS',
-        'favourite': False
-    },
-    {
-        'id': uuid.uuid4().hex,
-        'title': 'Persona 4 Golden Edition',
-        'developer': 'Atlus',
-        'genre': 'JRPG',
-        'favourite': True
-    },
-]
 
 
 # Sanity check route
@@ -60,29 +33,33 @@ def all_games():
     if request.method == 'POST':
         post_data = request.get_json()
 
-        GAMES.append({
-            'id': uuid.uuid4().hex,
+        # Inserting to games collection
+        db['games'].insert({
+            '_id': uuid.uuid4().hex,
             'title': post_data.get('title'),
-            'developer': post_data.get('developer'),
-            'genre': post_data.get('genre'),
-            'favourite': post_data.get('favourite')
+            'developer': db['developers'].find_one({'name': post_data.get('developer')})['_id'],
+            'publisher': db['publishers'].find_one({'name': post_data.get('publisher')})['_id'],
+            'genre': db['genres'].find_one(({'name': post_data.get('genre')}))['_id']
         })
 
         response_object['message'] = 'Game added!'
 
     else:
-        response_object['games'] = GAMES
+        query = []
+
+        # Getting all the games from the games collection (like SELECT * FROM games)
+        for game in db['games'].find():
+            query.append({
+                'id': game['_id'],
+                'title': game['title'],
+                'developer': db['developers'].find_one({'_id': game['developer']})['name'],
+                'publisher': db['publishers'].find_one({'_id': game['publisher']})['name'],
+                'genre': db['genres'].find_one({'_id': game['genre']})['name']
+            })
+
+        response_object['games'] = query
 
     return jsonify(response_object)
-
-
-def remove_game(game_id):
-    for game in GAMES:
-        if game['id'] == game_id:
-            GAMES.remove(game)
-            return True
-
-    return False
 
 
 @app.route('/admin/<game_id>', methods=['PUT', 'DELETE'])
@@ -91,20 +68,19 @@ def single_game(game_id):
 
     if request.method == 'PUT':
         post_data = request.get_json()
-        remove_game(game_id)
 
-        GAMES.append({
-            'id': uuid.uuid4().hex,
+        # Updating one game (like ALTER TABLE games WHERE _id = game_id);
+        db['games'].update_one({"_id": game_id}, {
             'title': post_data.get('title'),
-            'developer': post_data.get('developer'),
-            'genre': post_data.get('genre'),
-            'favourite': post_data.get('favourite')
+            'developer': db['developers'].find_one({'_id': post_data.get('developer')})['name'],
+            'publisher': db['publishers'].find_one({'_id': post_data.get('publisher')})['name'],
+            'genre': db['genres'].find_one({'_id': post_data.get('genre')})['name']
         })
 
         response_object['message'] = 'Game updated!'
 
     if request.method == 'DELETE':
-        remove_game(game_id)
+        db['games'].delete_one({'_id': game_id})
         response_object['message'] = 'Game removed!'
 
     return jsonify(response_object)

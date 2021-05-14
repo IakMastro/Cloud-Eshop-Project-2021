@@ -2,6 +2,7 @@ import uuid
 
 from flask import Flask, jsonify, request
 from flask_cors import CORS
+import pymongo
 
 # Configuration
 DEBUG = True
@@ -10,23 +11,11 @@ DEBUG = True
 app = Flask(__name__)
 app.config.from_object(__name__)
 
+# Mongodb connection initialization to database gameStore
+db = pymongo.MongoClient("mongodb://datinguser:datinguserpasswd@mongodb:27017/")['gameStore']
+
 # Initialize CORS
 CORS(app, resource={r'/*': {'origins': '*'}})
-
-USERS = [
-    {
-        'id': uuid.uuid4().hex,
-        'username': 'admin',
-        'password': 'pass',
-        'admin': True
-    },
-    {
-        'id': uuid.uuid4().hex,
-        'username': 'foo',
-        'password': 'bar',
-        'admin': False
-    },
-]
 
 
 @app.route('/login', methods=['PUT'])
@@ -34,7 +23,8 @@ def login():
     response_object = {'status': 'success'}
     post_data = request.get_json()
 
-    for user in USERS:
+    # Getting all the users from the database
+    for user in db['users'].find():
         if post_data['username'] == user['username']:
             if post_data['password'] == user['password']:
                 response_object['message'] = 'Logged in successfully'
@@ -49,5 +39,23 @@ def login():
     return jsonify(response_object)
 
 
+@app.route('/signup', methods=['POST'])
+def signup():
+    response_object = {'status': 'success'}
+    post_data = request.get_json()
+
+    # Inserting new user to database
+    db['users'].insert({
+        '_id': uuid.uuid4().hex,
+        'username': post_data.get('username'),
+        'password': post_data.get('password'),
+        'admin': False,
+        'games_owned': {}
+    })
+
+    response_object['message'] = 'User made!'
+    return jsonify(response_object)
+
+
 if __name__ == '__main__':
-    app.run(port=5001)
+    app.run()

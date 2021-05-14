@@ -1,0 +1,2 @@
+{"_id":{"$oid":"609e5b9123333b00071a3269"},"username":"admin","password":"pass","admin":true,"games_owned":{}}
+{"_id":{"$oid":"609e5bc323333b00071a326b"},"username":"foo","password":"bar","admin":false,"games_owned":{}}

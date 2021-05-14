@@ -7,6 +7,7 @@ services:
   client:
     # Docker image
     build: client
+    container_name: video-game-store
     # Port forward to 8080
     ports:
       - "8080:8080"
@@ -35,6 +36,7 @@ services:
   admin:
     # Docker image
     build: admin
+    container_name: admin
     # Port forward to 5000
     ports:
       - "5000:5000"
@@ -47,6 +49,7 @@ services:
       FLASK_ENV: development
     links:
       - fluentd
+      - mongo
     logging:
       driver: "fluentd"
       options:
@@ -57,6 +60,7 @@ services:
   users:
     # Docker image
     build: users
+    container_name: users
     # Port forward to 5001 (5000 is busy by the admin service)
     ports:
       - "5001:5000"
@@ -69,6 +73,7 @@ services:
       FLASK_ENV: development
     links:
       - fluentd
+      - mongo
     logging:
       driver: "fluentd"
       options:
@@ -78,6 +83,7 @@ services:
   # Fluentd service
   fluentd:
     build: logs
+    container_name: fluentd
     volumes:
       - ./logs/conf:/fluentd/etc
     # Linked to elasticsearch service
@@ -88,21 +94,50 @@ services:
       - "24224:24224"
       - "24224:24224/udp"
 
+  # Mongo Express service
+  # It's a GUI client for MongoDB
+  mongo-express:
+    image: mongo-express
+    container_name: mongo-express
+    ports:
+      - "8081:8081"
+    # User: datinguser
+    # Password: datingpasswd
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: datinguser
+      ME_CONFIG_MONGODB_ADMINPASSWORD: datinguserpasswd
+    links:
+      - mongo
+
+  # MongoDB service
+  mongo:
+    image: mongo
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    # User: datinguser
+    # Password: datingpasswd
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: datinguser
+      MONGO_INITDB_ROOT_PASSWORD: datinguserpasswd
+
+  # Kibana service
+  kibana:
+    image: kibana:7.10.1
+    container_name: kibana
+    links:
+      - "elasticsearch"
+    ports:
+      - "5601:5601"
+
   # Elasticsearch service
   elasticsearch:
     # Pull the image from the web
     image: docker.elastic.co/elasticsearch/elasticsearch:7.10.2
+    container_name: elasticsearch
     environment:
       - "discovery.type=single-node"
     expose:
       - "9200"
     ports:
       - "9200:9200"
-
-  # Kibana service
-  kibana:
-    image: kibana:7.10.1
-    links:
-      - "elasticsearch"
-    ports:
-      - "5601:5601"
