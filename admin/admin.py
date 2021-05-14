@@ -2,7 +2,7 @@ import uuid
 
 from flask import Flask, jsonify, request
 from flask_cors import CORS
-import pymongo
+from flask_pymongo import PyMongo
 
 # Configuration
 DEBUG = True
@@ -11,8 +11,9 @@ DEBUG = True
 app = Flask(__name__)
 app.config.from_object(__name__)
 
-# Mongodb connection initialization to database gameStore
-db = pymongo.MongoClient("mongodb://datinguser:datinguserpasswd@mongodb:27017/")['gameStore']
+# Mongodb connection initialization to database gameStore'
+app.config['MONGO_URI'] = "mongodb://datinguser:datinguserpasswd@mongodb:27017/gameStore?authSource=admin"
+mongo = PyMongo(app)
 
 # Enable CORS (CORS is a library that enables cross-origin requests)
 # For example different protocol, IP address, domain name or port
@@ -34,12 +35,12 @@ def all_games():
         post_data = request.get_json()
 
         # Inserting to games collection
-        db['games'].insert({
+        mongo.db.games.insert({
             '_id': uuid.uuid4().hex,
             'title': post_data.get('title'),
-            'developer': db['developers'].find_one({'name': post_data.get('developer')})['_id'],
-            'publisher': db['publishers'].find_one({'name': post_data.get('publisher')})['_id'],
-            'genre': db['genres'].find_one(({'name': post_data.get('genre')}))['_id']
+            'developer': mongo.db.developers.find_one({'name': post_data.get('developer')})['_id'],
+            'publisher': mongo.db.publishers.find_one({'name': post_data.get('publisher')})['_id'],
+            'genre': mongo.db.genres.find_one(({'name': post_data.get('genre')}))['_id']
         })
 
         response_object['message'] = 'Game added!'
@@ -48,13 +49,13 @@ def all_games():
         query = []
 
         # Getting all the games from the games collection (like SELECT * FROM games)
-        for game in db['games'].find():
+        for game in mongo.db.games.find():
             query.append({
                 'id': game['_id'],
                 'title': game['title'],
-                'developer': db['developers'].find_one({'_id': game['developer']})['name'],
-                'publisher': db['publishers'].find_one({'_id': game['publisher']})['name'],
-                'genre': db['genres'].find_one({'_id': game['genre']})['name']
+                'developer': mongo.db.developers.find_one({'_id': game['developer']})['name'],
+                'publisher': mongo.db.publishers.find_one({'_id': game['publisher']})['name'],
+                'genre': mongo.db.genres.find_one({'_id': game['genre']})['name']
             })
 
         response_object['games'] = query
@@ -70,17 +71,17 @@ def single_game(game_id):
         post_data = request.get_json()
 
         # Updating one game (like ALTER TABLE games WHERE _id = game_id);
-        db['games'].update_one({"_id": game_id}, {
+        mongo.db.games.update_one({"_id": game_id}, {
             'title': post_data.get('title'),
-            'developer': db['developers'].find_one({'_id': post_data.get('developer')})['name'],
-            'publisher': db['publishers'].find_one({'_id': post_data.get('publisher')})['name'],
-            'genre': db['genres'].find_one({'_id': post_data.get('genre')})['name']
+            'developer': mongo.db.developers.find_one({'_id': post_data.get('developer')})['name'],
+            'publisher': mongo.db.publishers.find_one({'_id': post_data.get('publisher')})['name'],
+            'genre': mongo.db.genres.find_one({'_id': post_data.get('genre')})['name']
         })
 
         response_object['message'] = 'Game updated!'
 
     if request.method == 'DELETE':
-        db['games'].delete_one({'_id': game_id})
+        mongo.db.games.delete_one({'_id': game_id})
         response_object['message'] = 'Game removed!'
 
     return jsonify(response_object)

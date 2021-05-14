@@ -11,9 +11,9 @@
 }
 
 h1 {
-font-family: georgia;
+  font-family: georgia,sans-serif;
   color: black;
-  margin:  400px;
+  margin: 400px;
   padding: 10px;
 }
 
@@ -24,18 +24,19 @@ h2 {
   font-size: large;
 }
 
-tr{
-font-family: arial;
-color:black;
-font-size: 130%;
+tr {
+  font-family: arial,serif;
+  color: black;
+  font-size: 130%;
 
 }
-tr2{
-color:blue;
-font-size: 150%;
+
+tr2 {
+  color: blue;
+  font-size: 150%;
 }
 
-button{
-background-color: #1dcaff;
+button {
+  background-color: #1dcaff;
 }
 </style>
