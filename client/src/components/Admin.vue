@@ -111,7 +111,7 @@ export default {
       },
       message: '',
       showMessage: false,
-      path: 'http://localhost:5000/admin',
+      path: 'http://admin:5000/admin',
     };
   },
 

@@ -80,20 +80,6 @@ services:
         fluentd-address: localhost:24224
         tag: log.users
 
-  # Fluentd service
-  fluentd:
-    build: logs
-    container_name: fluentd
-    volumes:
-      - ./logs/conf:/fluentd/etc
-    # Linked to elasticsearch service
-    links:
-      - "elasticsearch"
-    # Port forwarded
-    ports:
-      - "24224:24224"
-      - "24224:24224/udp"
-
   # Mongo Express service
   # It's a GUI client for MongoDB
   mongo-express:
@@ -104,40 +90,38 @@ services:
     # User: datinguser
     # Password: datingpasswd
     environment:
-      ME_CONFIG_MONGODB_ADMINUSERNAME: datinguser
-      ME_CONFIG_MONGODB_ADMINPASSWORD: datinguserpasswd
+      ME_CONFIG_MONGODB_ADMINUSERNAME: dbuser
+      ME_CONFIG_MONGODB_ADMINPASSWORD: dbpass
     links:
       - mongo
 
   # MongoDB service
   mongo:
-    image: mongo
+    build: db
     container_name: mongodb
     ports:
       - "27017:27017"
-    # User: datinguser
-    # Password: datingpasswd
+    volumes:
+      - ./db/data:/data/db
     environment:
-      MONGO_INITDB_ROOT_USERNAME: datinguser
-      MONGO_INITDB_ROOT_PASSWORD: datinguserpasswd
+      MONGO_INITDB_ROOT_USERNAME: dbuser
+      MONGO_INITDB_ROOT_PASSWORD: dbpass
+      MONGO_INITDB_DATABASE: gameStore
+#    links:
+#      - fluentd
+#    logging:
+#      driver: "fluentd"
+#      options:
+#        fluentd-address: localhost:24224
+#        tag: log.mongo
 
-  # Kibana service
-  kibana:
-    image: kibana:7.10.1
-    container_name: kibana
-    links:
-      - "elasticsearch"
+  # Fluentd service
+  fluentd:
+    build: logs
+    container_name: fluentd
+    volumes:
+      - ./logs/conf:/fluentd/etc
+    # Port forwarded
     ports:
-      - "5601:5601"
-
-  # Elasticsearch service
-  elasticsearch:
-    # Pull the image from the web
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.10.2
-    container_name: elasticsearch
-    environment:
-      - "discovery.type=single-node"
-    expose:
-      - "9200"
-    ports:
-      - "9200:9200"
+      - "24224:24224"
+      - "24224:24224/udp"

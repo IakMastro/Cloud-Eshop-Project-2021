@@ -1,6 +1,6 @@
 import uuid
 
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, g
 from flask_cors import CORS
 from flask_pymongo import PyMongo
 
@@ -60,7 +60,8 @@ def all_games():
 
         response_object['games'] = query
 
-    return jsonify(response_object)
+    query = jsonify(response_object)
+    return query
 
 
 @app.route('/admin/<game_id>', methods=['PUT', 'DELETE'])

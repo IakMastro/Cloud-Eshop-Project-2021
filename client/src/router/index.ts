@@ -3,7 +3,6 @@ import VueRouter, { RouteConfig } from 'vue-router';
 import Admin from '../components/Admin.vue';
 import Users from '../components/Users.vue';
 import Library from '../components/Library.vue';
-import Login from '../components/Login.vue';
 
 Vue.use(VueRouter);
 
