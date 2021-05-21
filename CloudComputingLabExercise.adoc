@@ -1,4 +1,6 @@
 = Υπολογιστική Νέφους και Υπηρεσίες
+:toc:
+:toc-title: Πίνακας Περιεχομένων
 
 .ΕΡΓΑΣΤΗΡΙΟ ΜΑΘΗΜΑΤΟΣ
 [ΝΟΤΕ]
@@ -16,7 +18,7 @@
 
 == Εισαγωγή
 === Περιγραφή
-Η ανάπτυξη του back-end της εφαρμογής έγινε με χρήση του https://flask.palletsprojects.com/en/2.0.x/[*Flask*], ένα Python framework για την δημιουργία RESTful APIs. Η ανάπτυξη του front-end της εφαρμογής έγινε με https://vuejs.org/[*Vue.js*], JavaScript framework για την δημιουργία του UI της εφαρμογής. Η εφαρμογή μας τρέχει πάνω στη πλατφόρμα ανάπτυξης λογισμικού https://nodejs.org/en/[*Node.js*]. Η διαχείριση των δεδομένων, όπως των βάσεων δεδομένων των παιχνιδιών του E-SHOP αλλά και δεδομένα των χρηστών, γίνεται μέσω https://www.mongodb.com/1[*MongoDB*]. Για εύκολη διαχείριση γίνεται και χρήση της https://github.com/mongo-express/mongo-express[*mongo-express*] που είναι web-based MongoDB admin interface. Η σύνδεση με τη βάση γίνεται μέ την χρήση της βιβλιοθήκης https://pymongo.readthedocs.io/en/stable/[*pymongo*]. Συλλογή δεδομένων και συγκεκριμένα logs γίνεται με την χρήση του https://www.fluentd.org/[*Fluentd*]. Η εφαρμογή είναι πλήρως dockerized και όλες οι υπηρεσίες τρέχουν σε https://www.docker.com/[*Docker*] containers.
+Η ανάπτυξη του back-end της εφαρμογής έγινε με χρήση του https://flask.palletsprojects.com/en/2.0.x/[*Flask*], ένα Python framework για την δημιουργία RESTful APIs. Η ανάπτυξη του front-end της εφαρμογής έγινε με https://vuejs.org/[*Vue.js*], JavaScript framework για την δημιουργία του UI της εφαρμογής. Η εφαρμογή μας τρέχει πάνω στη πλατφόρμα ανάπτυξης λογισμικού https://nodejs.org/en/[*Node.js*]. Η διαχείριση των δεδομένων, όπως των βάσεων δεδομένων των παιχνιδιών του E-SHOP αλλά και δεδομένα των χρηστών, γίνεται μέσω https://www.mongodb.com/1[*MongoDB*]. Για εύκολη διαχείριση γίνεται και χρήση της https://github.com/mongo-express/mongo-express[*mongo-express*] που είναι web-based MongoDB admin interface. Η σύνδεση με τη βάση γίνεται μέ την χρήση της βιβλιοθήκης https://flask-pymongo.readthedocs.io/en/latest/[*flask-pymongo*]. Συλλογή δεδομένων και συγκεκριμένα logs γίνεται με την χρήση του https://www.fluentd.org/[*Fluentd*]. Η εφαρμογή είναι πλήρως dockerized και όλες οι υπηρεσίες τρέχουν σε https://www.docker.com/[*Docker*] containers.
 
 === Εγκατάσταση
 Κάνουμε clone από το repo με την παρακάτω εντολή:
@@ -37,7 +39,7 @@ NOTE: Πρέπει να έχει γίνει σωστά η εγκατάσταση
 
 === Αυτόματη εγκατάσταση προγράμματος για την συλλογή των δεδομένων
 
-=== Αυτόματη εγκατάσταση προγράμματος για την συλλογή των δεδομένων
+=== onEvent - τοπική/προσωρινή αποθήκευση των δεδομένων
 
 == Ενότητα Δεύτερη
 === Δημιουργία βάσης δεδομένων(Database replication)
@@ -46,6 +48,379 @@ NOTE: Πρέπει να έχει γίνει σωστά η εγκατάσταση
 
 == Ενότητα Τρίτη
 === Δημιουργία GUI
+H δημιουργία του GUI που αποτελείται ουσιαστικά από το front-end μέρος της εφαρμογής, έγινε με την χρήση του με https://vuejs.org/[*Vue.js*] σε συνδιασμό με το https://getbootstrap.com/[*bootstrap*]. Τα αρχεία του Vue βρίσκονται στον φάκελο https://github.com/IakMastro/Cloud-Eshop-Project-2021/tree/master/client[*client*] o οποίος δημιουργήθηκε με την εντολή και έπειτα τις κατάλληλες ρυθμίσεις κατά την εγκατάσταση:
+
+```
+vue create client
+```
+
+Παρακάτω βλέπουμε τα περιεχόμενα του τελικού φακέλου client μετά τις αλλαγές μας:
+```
+client
+├── babel.config.js
+├── Dockerfile
+├── package.json
+├── package-lock.json
+├── public
+│   ├── favicon.ico
+│   └── index.html
+├── README.md
+├── src
+│   ├── App.vue
+│   ├── assets
+│   │   └── logo.png
+│   ├── components
+│   │   ├── Admin.vue
+│   │   ├── Alert.vue
+│   │   ├── HelloWorld.vue
+│   │   ├── Library.vue
+│   │   ├── Login.vue
+│   │   ├── Navbar.vue
+│   │   └── Users.vue
+│   ├── main.ts
+│   ├── router
+│   │   └── index.ts
+│   ├── shims-tsx.d.ts
+│   └── shims-vue.d.ts
+├── tsconfig.json
+└── yarn.lock
+```
+
+Εστιάζουμε μέσα στα αρχεία στον υποφάκελο client/src, μέσα στον οποίο παρατηρούμε κάποια βασικά αρχεία.
+
+
+Μέσα στον συγκεκριμένο φάκελο υπάρχουν τα παρακάτω απαραίτητα για το front-end αρχεία:
+
+[cols="25h,~"]
+|===
+|Αρχείο |Περιγραφή
+
+|main.ts
+|Έδω γίνεται load και initialize το Vue μαζί με το βασικό component App.vue
+
+|App.vue
+|Το βασικό component, από τα οποία φορτώνονται όλα τα άλλα components μας
+
+|components
+|Μέσα σε αυτό τον φάκελο υπάρχουν τα components που έχουμε φτιάξει και αποτελούν το τελικό GUI
+
+|index.ts
+|Εδώ ορίζονται τα URLs μας και τα components που αντιστοιχούν
+|===
+
+Μέσα στο index.js έχουμε ορίσει τα routes, συνδέοντας έτσι τα components με το αντίστοιχο URL.
+
+```
+Vue.use(VueRouter);
+
+const routes: Array<RouteConfig> = [
+  {
+    path: '/admin',
+    name: 'Admin',
+    component: Admin,
+  },
+  {
+    path: '/login',
+    name: 'Users',
+    component: Users,
+  },
+  {
+    path: '/library',
+    name: 'Library',
+    component: Library,
+  },
+];
+```
+
+Παρατηρούμε ότι για κάθε component ορίζουμε το path, ένα όνομα και το component που αντιστοιχεί κάθε φορά σε ένα από τα .vue αρχεία που βρίσκονται στον υποφάκελο *client/components*.
+Έπειτα έχουμε τα components μας, τα οποία αντιστοιχούν ουσιαστικά σε μια ιστοσελίδα το κάθε ένα, αλλά όχι πάντα. Για παράδειγμα, το component *Navbar.vue* περιέχει κώδικα HTML και CSS και αποτελέι το navigation bar, το οποίο έπειτα το φορτώνουμε στο HTML/CSS μέρος της κάθε σελίδας (<navbar></navbar>) με αποτέλεσμα να εμφανίζεται στις σελίδες. Το ίδιο ισχύει και με το *Alert.vue* το οποίο φορτώνεται σε κάθε σελίδα μας (<alert :message="message" v-if="showMessage"></alert>). Στα άλλα components εκτός από τον βασικό HTML/CSS κώδικα έχουμε και μεθόδους και κώδικα απαραίτητο για την σύνδεση με το back-end της εφαρμογής ώστε να γίνεται και να εμφανίζεται δυναμικά η ανταλλαγή δεδομένων.
+
+Παρακάτω θα κάνουμε μια σύντομη περιγραφή της ανάπτυξης του component *Admin.vue*.
+Το αρχείο αρχίζει με την ανάπτυξη του HTML/CSS με χρήση του bootstrap framework, όλο το κομμάτι μέσα στα <template> tags είναι υπεύθυνο για το τι βλέπουμε στην οθόνη. Παρακάτω ο κώδικας με σύντομη περιγραφή των σημαντικότερων σημείων:
+```
+<template>
+  <div class="container">
+    <navbar></navbar>	<!-- Φόρτωση του Navbar component -->
+    <div class="row">
+      <div class="col-sm-20">
+        <h1>Games</h1>
+        <hr>
+        <br><br>		
+        <alert :message="message" v-if="showMessage"></alert> 	<!-- Φόρτωση του Alert -->
+        <button type="button"	<!-- Δημιουργία Add Game button -->
+                class="btn btn-success btn-md"
+                v-b-modal.game-modal>
+          Add Game
+        </button>
+        <br><br>
+        <table class="table table-hover">	<!-- Δημιουργία πίνακα (table) παιχνιδιών -->
+          <thead>
+          <tr>
+            <th scope="col">Title</th>
+            <th scope="col">Developer</th>
+            <th scope="col">Genre</th>
+            <th></th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr>
+          <tr v-for="(game, index) in games" :key="index">	<!-- v-for για εμφάνιση παιχνιδιών -->
+            <td>{{ game.title }}</td>
+            <td>{{ game.developer }}</td>
+            <td>{{ game.genre }}</td>
+            <td>
+              <div class="btn-group" role="group">	
+                <button type="button"					<!-- Κουμπί edit game -->
+                        class="btn btn-info btn-sm"		<!-- On click -> editGame(game) -->
+                        v-b-modal.game-modal
+                        @click="editGame(game)">
+                  Update
+                </button>
+                <button type="button"					<!-- Κουμπί delete game -->
+                        class="btn btn-danger btn-sm"	<!-- On click -> deleteGame(game.id) -->
+                        @click="onDeleteGame(game.id)">
+                  Delete
+                </button>
+              </div>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <b-modal ref="addGameModal"	<!-- Δημιουργία modal για εισαγωγή παιχνιδιών -->
+             id="game-modal"
+             title="Add a new game"
+             hide-footer>
+      <b-form @submit="onsubmit" @reset="onreset" class="w-100">	<!-- Δημιουργία form -->
+        <b-form-group id="form-title-group"
+                      label="Title:"
+                      label-for="form-title-input">
+          <b-form-input id="form-title-input"
+                        type="text"
+                        v-model="gameForm.title"
+                        required
+                        placeholder="Enter title">
+          </b-form-input>
+        </b-form-group>
+        <b-form-group id="form-developer-group"
+                      label="Developer:"
+                      label-for="form-developer-input">
+          <b-form-input id="form-developer-input"
+                        type="text"
+                        v-model="gameForm.developer"
+                        required
+                        placeholder="Enter developer">
+          </b-form-input>
+        </b-form-group>
+        <b-form-group id="form-genre-group"
+                      label="Genre:"
+                      label-for="form-genre-input">
+          <b-form-input id="form-genre-input"
+                        type="text"
+                        v-model="gameForm.genre"
+                        required
+                        placeholder="Enter genre">
+          </b-form-input>
+        </b-form-group>
+        <b-button-group>
+          <b-button type="submit" variant="primary">Submit</b-button>	<!-- Κουμπί sumbit -->
+          <b-button type="reset" variant="danger">Reset</b-button>		<!-- Κουμπί reset -->
+        </b-button-group>
+      </b-form>
+    </b-modal>
+  </div>
+</template>
+```
+
+NOTE: MAIN ADMIN PAGE SCREENSHOT HERE
+
+Έπειτα ακουλουθεί το <script>...</script> κομμάτι, μέσα στο οποίο υπάρχει ο κώδικας που μας συνδέει με το back-end της εφαρμογής. Σημαντικό κομμάτι για την υλοποίηση είναι η χρήση του https://github.com/axios/axios[*Axios*] που είναι Promise based HTTP client που χειρίζεται και βοηθάει με τα HTTP GET και POST requests συνδέοντας έτσι και μεταφέροντας δεδομένα από το back-end στο front-end μέσω αρχείων JSON.
+Άρα αρχικά φορτώνουμε τις βιβλιοθήκες, το axios και τα δυο εξωτερικά components Alert και Navbar.
+
+```
+import axios from 'axios';
+import Alert from './Alert.vue';
+import Navbar from './Navbar.vue';
+```
+
+Έπειτα δηλώνουμε όλα τα δεδομένα που χρησιμοποιούνται παρακάτω στο script μας.
+
+```
+export default {
+  // Data used on this page
+  data() {
+    return {
+      games: [],
+      gameForm: {
+        id: '',
+        title: '',
+        developer: '',
+        genre: '',
+        edit: [],
+      },
+      message: '',
+      showMessage: false,
+      path: 'http://admin:5000/admin',
+    };
+  },
+```
+
+Δηλώνουμε τα components που χρησιμοποιούνται από άλλα αρχεία, στην περίπτωση μας το Alert και το Navbar.
+
+```
+components: {
+    alert: Alert,
+    navbar: Navbar,
+  },
+```
+
+Και έπειτα ορίζουμε τις μεθόδους που θα χρησιμοποιήσουμε. Κατά την δημιουργία εκτελέιται η created(), η οποία καλεί την μέθοδο getGames().
+```
+created() {
+    this.getGames();
+  },
+```
+
+Η μέθοδος getGames() μέσω GET HTTP Request και την χρήση του Axios, παίρνει τα δεδομένα (παιχνίδια) από τον Web Server (Admin.py).
+
+```
+getGames() {
+      axios.get(this.path)
+        .then((res) => {
+          this.games = res.data.games;
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+    },
+```
+
+Σε περίπτωση που κάνουμε update των δεδομένων ενός παιχνιδιού, η θέλουμε να προσθέσουμε ένα παιχνίδι έχουμε την δημιουργία της παρακάτω φόρμας εισαγωγής:
+
+NOTE: FORM SCREENSHOT HERE
+
+Έπειτα έχουμε δυο επιλογές, submit η reset. Στην περίπτωση του reset καλείται η παρακάτω onreset():
+```
+onreset(evt) {
+      evt.preventDefault();
+      this.initForm();
+    },
+```
+Η οποία καλεί την initForm() η οποία δεν κάνει τίποτα άλλο από το να διαγράψει ότι έχει γράψει ο χρήστης στην φόρμα.
+```
+initForm() {
+      this.gameForm.id = '';
+      this.gameForm.title = '';
+      this.gameForm.developer = '';
+      this.gameForm.genre = '';
+      this.gameForm.edit = false;
+    },
+```
+
+Αλλιώς πηγαίνουμε στην onsumbit() η οποία μέθοδος αφού κρύψει την φόρμα ετοιμάζει το payload που θα σταλεί με τα δεδομένα που έχουν εισαχθεί στην φόρμα. 
+```
+onsubmit(evt) {
+      evt.preventDefault();
+      this.$refs.addGameModal.hide();
+      const payload = {
+        id: this.gameForm.id,
+        title: this.gameForm.title,
+        developer: this.gameForm.developer,
+        genre: this.gameForm.genre,
+      };
+```
+
+Επειτα ελέγχει. Αν πρόκειται για edit (Update), καλεί την updateGame στέλνοντας την το payload και αντίστοιχo ID.
+Αλλιώς κάνει initialize την φόρμα και καλεί την addGame() δίνοντας της το payload. Τέλος κάνει initialize την φόρμα σε οποιαδήποτε περίπτωση για να είναι έτοιμη για επόμενη χρήση.
+
+```
+if (this.gameForm.edit) {
+        this.updateGame(payload, payload.id);
+      } else {
+        this.initForm();
+        this.addGame(payload);
+      }
+      this.initForm();
+    },
+```
+
+Στον έλεγχο αυτό, στην περίπτωση που ο χρήστης έχει πάει για update, θα κληθεί η editGame() που θα αρχικοποιήσει την φόρμα με τα στοιχεία του παιχνιδιού που της έχουμε δώσει για επεξεργασία και θα ορίσει το this.gameForm.edit σε True, ώστε να ξέρουμε αν έχουμε να κάνουμε με update ή εισαγωγή παιχνιδιού.
+```
+     editGame(game) {
+      this.gameForm = game;
+      this.gameForm.edit = true;
+    },
+```
+
+Η μέθοδος updateGame() παίρνει το payload και μέσω του axios και μέσω PUT κάνει Update το παιχνίδι, βρίσκοντας το με το ID του, καλεί την getGames() για να παρθούν πάλι τα παιχνίδια από τον Web Server, ορίζει το message ως "Game updated" και το showMessage ως true, για να τυπωθεί μέσω του Alert component.
+```
+updateGame(payload, gameId) {
+      const path = this.path.concat(`/${gameId}`);
+      axios.put(path, payload)
+        .then(() => {
+          this.getGames();
+          this.message = 'Game updated!';
+          this.showMessage = true;
+        })
+        .catch((error) => {
+          console.error(error);
+          this.getGames();
+        });
+    },
+```
+
+NOTE: GAME UPDATED SCREENSHOT HERE
+
+Η addGame() παίρνει το payload και μέσω POST HTTP Request το στέλνει στον Web server. Αν γίνει με επιτυχία, τότε παίρνει τα παιχνίδια από τον Web Server από την αρχή για να πάρει και το καινούριο που προσθέσαμε και έπειτα εμφανίζει όμοια με την updateGame το μήνυμα επιτυχίας στην οθόνη.
+```
+addGame(payload) {
+      axios.post(this.path, payload)
+        .then(() => {
+          this.getGames();
+          this.message = 'Game added!';
+          this.showMessage = true;
+        })
+        .catch((error) => {
+          console.log(error);
+          this.message = 'No connection to server';
+          this.showMessage = true;
+          this.getGames();
+        });
+    },
+```
+
+NOTE: GAME ADDED SCREENSHOT HERE
+
+Τέλος σε περίπτωση που γίνει επιλογή διαγραφής παιχνιδιού, θα κληθεί η onDeleteGame() με το παιχνίδι για παράμετρο, η οποία με την σειρα της καλεί την removeGame, δίνοντας της το παιχνίδι.
+
+```
+    onDeleteGame(game) {
+      this.removeGame(game);
+    },
+```
+
+Η removeGame παίρνοντας το παιχνίδι, με το ID του παιχνιδιού και μέσω του axios στέλνει HTTP DELETE request για να γίνει η διαγραφή και έπειτα τυπώνεται το μήνυμα "Game removed!" μέσω του Alert.
+
+```
+removeGame(gameID) {
+      const path = this.path.concat(`/${gameID}`);
+      axios.delete(path)
+        .then(() => {
+          this.getGames();
+          this.message = 'Game removed!';
+          this.showMessage = true;
+        })
+        .catch((error) => {
+          console.error(error);
+          this.getGames();
+        });
+    },
+```
+
+NOTE: REMOVED GAME SCREENSHOT HERE
+
+Με την ίδια λογική έγιναν και οι υλοποίησεις των *Library* και *Login* components που αποτελούν τις άλλες δυο σελίδες του e-shop μας.
 
 === Δημιουργία Websocket σύνδεσης με την βάση ή με τις βασικές υπηρεσίες για άμεση μεταφορά των δεδομένων
 
