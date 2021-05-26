@@ -117,13 +117,13 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: dbuser
       MONGO_INITDB_ROOT_PASSWORD: dbpass
-      MONGO_INITDB_DATABASE: gameStore'
+      MONGO_INITDB_DATABASE: gameStore
     networks:
       - mongonet
 
   # Fluentd service
   fluentd:
-    image: jsliang/fluentd-plugin-mongo
+    build: logs
     container_name: fluentd
     volumes:
       - ./logs/conf:/fluentd/etc
