@@ -36,15 +36,598 @@ NOTE: Πρέπει να έχει γίνει σωστά η εγκατάσταση
 
 == Ενότητα Πρώτη
 === Δημιουργία δικτύου
+Η εφαρμογή που έχουμε αναπτύξει τρέχει σε 3 Docker δίκτυα. Κανονικά μετά το compose, το Docker δημιουργεί ένα default δίκτυο για την εφαρμογή πάνω στο οποίο τρέχουν όλα τα services. Μέσα στο αρχείο *docker-compose.yml* όμως μας δίνεται η δυνατότητα να ορίσουμε τα δικά μας δίκτυα με την χρήση του *networks* key, όπως φαίνεται μέσα στο αρχείο μας:
+```
+networks:
+  mongonet:
+  admin:
+  users:
+```
+
+Παρατηρούμε ότι έχουμε 3 δίκτυα δηλωμένα για την εφαρμογή, το δίκτυο mongonet, το δίκτυο admin και τέλος το δίκτυο users. Για να μπορέσουν τα services μας να έχουν πρόσβαση σε αυτά τα δίκτυα, ο ορισμός γίνεται με την χρήση του *network* key σε επίπεδο service αυτή τη φορά. Για να παράδειγμα το service του Fluentd το οποίο πρέπει να έχει πρόσβαση και να επικοινωνεί με όλα τα άλλα services της εφαρμογής μας, θα πρέπει να ανήκει και στα 3 δίκτυα. Άρα ορίζουμε και τα 3 δίκτυα όπως παρατηρούμε παρακάτω:
+```
+  # Fluentd service
+  fluentd:
+    ...
+	...
+	...
+    networks:
+      - mongonet
+      - admin
+      - users
+```
+
+Ενώ για παράδειγμα στην περίπτωση της υπηρεσίας admin, εφόσον υπάρχει επιθυμία για επικοινωνία με την βάση δεδομένων, δηλαδή με την υπηρεσία της MongoDB, ορίζουμε τα δίκτυα admin, το δίκτυο δηλαδή του ενός Web Server μας και το δίκτυο της βάσης δεδομένων, όπως βλέπουμε παρακάτω:
+```
+  # Admin service
+  admin:
+    ...
+	...
+    networks:
+      - admin
+      - mongonet
+```
+
+Αντίστοιχα και για το Users, ενώ τα services της MongoDB και Mongo Express ορίζουμε μόνο το δίκτυο mongonet.
 
 === Αυτόματη εγκατάσταση προγράμματος για την συλλογή των δεδομένων
+H αυτόματη εγκατάσταση της εφαρμογής γίνεται μέ το αρχείο *docker-compose.yml*. Στο αρχείο αυτό δηλώνουμε όλα τα services της εφαρμογής μας μαζί με παραπάνω πληροφορίες που θα αναλυθούν παρακάτω. Παρατηρούμε το αρχείο *docker-compose.yml*:
+```
+# Yaml compose version
+version: "3.8"
+
+# Services used on the swarm
+services:
+  # Client service
+  client:
+    # Docker image
+    build: client
+    container_name: video-game-store
+    # Port forward to 8080
+    ports:
+      - "8080:8080"
+    # Real time developing on this volume
+    volumes:
+      - ./client:/client
+    # NodeJS environment
+    environment:
+      NODE_APP: client
+      NODE_ENV: development
+    # Linked containers to client
+    depends_on:
+      - admin
+      - users
+      - fluentd
+    # Logging driver (loads fluentd container)
+    logging:
+      driver: "fluentd"
+      options:
+        # Fluentd address
+        fluentd-address: localhost:24224
+        # Tag that fluentd sees
+        tag: log.client
+    networks:
+      - admin
+      - users
+
+  # Admin service
+  admin:
+    # Docker image
+    build: admin
+    container_name: admin
+    # Port forward to 5000
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./admin:/admin
+    # Flask environment
+    environment:
+      FLASK_APP: admin
+      FLASK_RUN_HOST: 0.0.0.0
+      FLASK_ENV: development
+    depends_on:
+      - fluentd
+      - mongo
+    logging:
+      driver: "fluentd"
+      options:
+        fluentd-address: localhost:24224
+        tag: log.admin
+    networks:
+      - admin
+      - mongonet
+
+  # Users service
+  users:
+    # Docker image
+    build: users
+    container_name: users
+    # Port forward to 5001 (5000 is busy by the admin service)
+    ports:
+      - "5001:5000"
+    volumes:
+      - ./users:/users
+    # Flask environment
+    environment:
+      FLASK_APP: users
+      FLASK_RUN_HOST: 0.0.0.0
+      FLASK_ENV: development
+    depends_on:
+      - fluentd
+      - mongo
+    logging:
+      driver: "fluentd"
+      options:
+        fluentd-address: localhost:24224
+        tag: log.users
+    networks:
+      - users
+      - mongonet
+
+  # Mongo Express service
+  # It's a GUI client for MongoDB
+  mongo-express:
+    image: mongo-express
+    container_name: mongo-express
+    ports:
+      - "8081:8081"
+    # User: datinguser
+    # Password: datingpasswd
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: dbuser
+      ME_CONFIG_MONGODB_ADMINPASSWORD: dbpass
+    depends_on:
+      - mongo
+    networks:
+      - mongonet
+
+  # MongoDB service
+  mongo:
+    build: db
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - ./db/data:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: dbuser
+      MONGO_INITDB_ROOT_PASSWORD: dbpass
+      MONGO_INITDB_DATABASE: gameStore
+    networks:
+      - mongonet
+
+  # Fluentd service
+  fluentd:
+    build: logs
+    container_name: fluentd
+    volumes:
+      - ./logs/conf:/fluentd/etc
+    # Port forwarded
+    ports:
+      - "24224:24224"
+      - "24224:24224/udp"
+    depends_on:
+      - mongo
+    networks:
+      - mongonet
+      - admin
+      - users
+
+networks:
+  mongonet:
+  admin:
+  users:
+```
+
+Εκτός από τα networks, που έχουν αναλυθεί και το version που ορίζουμε στην αρχή, έχουμε τα services. Για την εφαρμογή μας έχουμε τα παρακάτω services:
+
+* client (Vue Client)
+* admin (admin.py Server)
+* users (users.py Server)
+* mongo-express (MongoDB GUI Client)
+* mongo (MongoDB Server)
+* fluentd (FluentD)
+
+Μέσα σε κάθε service, βλέπουμε ότι με την χρήση ορισμένων keys δίνουμε παραπάνω πληροφορίες για το service για την σωστή λειτουργία τους. Στο παραπάνω παράδειγμα, κάνουμε χρήση των παρακάτω:
+
+[cols="25h,~"]
+|===
+|Key |Περιγραφή
+
+|build
+|Εδώ δίνουμε το directory στο οποίο υπάρχει το Dockerfile για να γίνει το build του image
+
+|container_name
+|Το όνομα του container που θα δημιουργηθεί
+
+|ports
+|Port Fowarding, μορφής HOST:CONTAINER
+
+|volumes
+|Μορφής HOST_DIR:CONTAINER_DIR, για real-time development
+
+|environment
+|Ορισμός κάποιων environment variables 
+
+|depends_on
+|Ορισμός άλλων container στα οποία βασίζεται το κάθε service για την λειτουργία του
+
+|logging
+|Χρήση του μηχανισμού του Docker για logging, ορίζοντας logging driver (fluentd στην περίπτωση μας)
+
+|networks
+|Τα δίκτυα στα οποία ανήκει το κάθε service
+|===
+
+Το κάθε Dockerfile, περιέχει ουσιαστικά instructions για την δημιουργία του κάθε Docker image. Για τον client παράδειγμα έχουμε:
+```
+# Nodejs image
+FROM node:15.14.0-alpine3.10
+
+# Path on container
+WORKDIR /client
+
+# Install packages for npm
+COPY package.json .
+COPY package-lock.json .
+
+# It was noted that this npm version should be used instead
+RUN npm install -g npm@7.10.0
+# Installing from the package.json
+RUN npm install
+
+# Exposing the port 8080 to the rest of the swarm
+EXPOSE 8080
+COPY . .
+
+# Run the client app
+CMD ["npm", "run", "serve"]
+```
+
+Παίρνουμε αρχικά από το official Node image την έκδοση που τρέχει πάνω σε alpine, ορίζουμε ένα work directory, το /client, περνάμε τα install packages, κάνουμε *RUN npm install -g npm@7.10.0* και *RUN npm install* για την εγκατάσταση του NPM, ανοίγουμε την θύρα 8080 για τα άλλα containers, κάνουμε COPY όλα τα αρχεία του project και εκτελούμε την *npm run serve* για να εκτελεστεί το app μας.
+
+Αντίστοιχα για το admin και το users έχουμε τα παρακάτω Dockerfile αρχεία:
+```
+# Python version 3.7 from Alpine
+FROM python:3.7-alpine
+
+# Path on container
+WORKDIR /admin
+
+# Enviroment variables
+ENV FLASK_APP=admin.py
+ENV FLASK_RUN_HOST=0.0.0.0
+
+# Install additional modules
+COPY requirements.txt requirements.txt
+RUN pip install -r requirements.txt
+
+# Expose the port 5000
+EXPOSE 5000
+COPY admin.py .
+
+# Run the app
+CMD ["flask", "run"]
+```
+
+```
+# Python version 3.7 from Alpine
+FROM python:3.7-alpine
+
+# Path on container
+WORKDIR /users
+
+# Enviroment variables
+ENV FLASK_APP=users.py
+ENV FLASK_RUN_HOST=0.0.0.0
+
+# Install additional modules
+COPY requirements.txt requirements.txt
+RUN pip install -r requirements.txt
+
+# Expose the port 5000
+EXPOSE 5000
+COPY users.py .
+
+# Run the app
+CMD ["flask", "run"]
+```
+
+Παίρνουμε ένα απλό python image σε alpine, ορίζουμε WORKDIR, environment variables που χρειάζεται το Flask, περνάμε το αρχείο με τα requirements, τα κάνουμε εγκατάσταση με την *RUN pip install -r requirements.txt*, ανοίγουμε την θύρα στην οποία θα τρέξει το πρόγραμμα μας, κάνουμε COPY το .py πρόγραμμα και το εκτελούμε με *CMD ["flask", "run"]*.
+
+Για την MongoDB έχουμε:
+```
+FROM mongo
+
+COPY ./init-db.d/seed.js /docker-entrypoint-initdb.d
+```
+
+Παίρνουμε δηλαδή απλά το επίσημο mongo image, και το αρχείο μας ./init-db.d/seed.js το κάνουμε COPY στο /docker-entrypoint-initdb.d που το Docker θα εκτελέσει κατά το build και θα αρχικοποιήσει την βάση μας εκτελόντας ότι υπάρχει στο αρχείο seed.js.
+
+Ενώ για τo mongo-express απλά πέρνουμε το έτοιμο image και δεν χρειαζόμαστε Dockerfile.
+
+Τέλος, για το fluentd container έχουμε:
+```
+FROM fluent/fluentd
+
+USER root
+
+RUN apk add --no-cache --update --virtual .build-deps \
+        sudo build-base ruby-dev \
+ && sudo gem install fluent-plugin-mongo \
+ && sudo gem sources --clear-all \
+ && apk del .build-deps \
+ && rm -rf /tmp/* /var/tmp/* /usr/lib/ruby/gems/*/cache/*.gem
+```
+ 
+Όπου παίρνουμε το επίσημο imagine, δηλώνουμε USER στον οποίο θα δουλέψουμε, βάζουμε το plugin για την mongo και έπειτα διαγράφουμε κάποια αρχεία τα οποία δεν υπάρχει λόγος να μείνουν.
+ 
+Έτσι με τα Dockerfile αρχεία και με το τελικό *docker-compose.yml* με την εκτέλεση της εντολής *docker-compose up --build --force-recreate* ουσιαστικά γίνεται αυτόματα όλη η εγκατάσταση της εφαρμογής μας σε πλήρες dockerized περιβάλλον.
+ 
+Επίπλεον, υπάρχουν τα παρακάτω scripts εγκατάστασης σε debian και arch καθώς και για run, restart και pause.
+ 
+install_and_run_arch.sh:
+```
+#!/bin/sh
+
+echo "Installing docker"
+sudo pacman -Syu docker
+sudo systemctl start docker.service
+sudo systemctl enable docker.service
+
+sudo groupadd docker
+sudo usernod -aG docker "${USERNAME}"
+
+echo "Successfully installed docker"
+./run.sh
+```
+
+install_and_run_debian.sh:
+```
+#!/bin/sh
+
+echo "Installing docker"
+sudo apt-get install \
+  apt-transport-https \
+  ca-certificates \
+  curl \
+  gnupg \
+  lsb-release
+
+curl -fsSL https://download.docker.com/linux/debian/gpg | \
+ sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+
+echo \
+  "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian \
+  $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+sudo apt-get update
+sudo apt-get install docker-ce docker-ce-cli containerd.io
+
+echo "Successfully installed docker"
+./run.sh
+```
+
+run.sh:
+```
+#!/bin/sh
+
+docker-compose up -d
+```
+
+restart.sh:
+```
+#!/bin/sh
+
+docker-compose down
+sudo rm -rf db/data
+docker-compose up -d --force-recreate
+```
+
+stop.sh:
+```
+#!/bin/sh
+
+docker-compose stop
+```
+
+
+Για κάθε service, υπάρχει ένα Dockerfile, το οποίο θα χρησιμοποιηθεί από το docker-compose.yml για να κάνει build το Docker image που χρειάζεται για το αντίστοιχο container που θα δημιουργηθεί.
+
 
 === onEvent - τοπική/προσωρινή αποθήκευση των δεδομένων
+H onEvent τοπική/προσωρινή αποθήκευση των δεδομένων γίνεται με την χρήση του Fluentd. Το https://www.fluentd.org/[*Fluentd*] είναι ένα open-source data collector που βοηθάει στην δημιουργία του logging layer, μαζεύοντας logs/δεδομένα από περισσότερους servers σε ένα μέρος. Έτσι γίνεται πιο εύκολα η διαχείριση τους. Στο παράδειγμα μας θα πέρνουμε τα logs από τους web servers μας και την client εφαρμογή. Στο αρχείο docker-compose.yml έχουμε δηλώσει στα 3 services που έχουμε για τα admin, users και client, κάνοντας χρήση του logging μηχανισμού του Docker και δηλώνοντας το Fluentd ως logging driver, όπως παρατηρούμε παρακάτω στην περίπτωση για παράδειγμα του users service:
+```
+    logging:
+      driver: "fluentd"
+      options:
+        fluentd-address: localhost:24224
+        tag: log.users
+```
+
+Σε αυτό το κομμάτι, ορίζουμε το fluentd ως logging driver, και έπειτα στα options ορίζουμε, την διέυθυνση και το port στο οποίο τρέχει το fluentd και ένα tag που χρησιμοποιεί το fluentd (θα το δούμε παρακάτω).
+
+Το fluentd service ορίζεται όπως παρακάτω στο docker-comopose.yml:
+```
+  # Fluentd service
+  fluentd:
+    build: logs
+    container_name: fluentd
+    volumes:
+      - ./logs/conf:/fluentd/etc
+    # Port forwarded
+    ports:
+      - "24224:24224"
+      - "24224:24224/udp"
+    depends_on:
+      - mongo
+    networks:
+      - mongonet
+      - admin
+      - users
+```
+
+Βλέπουμε λοιπόν ότι δίνεται το directory ./logs/conf από το μηχάνημα μας στο container του fluent στην τοποθεσία /fluentd/etc για real-time development, όπου by default υπάρχει το fluent.conf αρχείο του Fluentd. Κοιτάζοντας το αρχείο fluent.conf που έχουμε στο ./logs/conf παρατηρούμε τα παρακάτω:
+```
+# The source of the docker engine. It is ported always to 24224
+<source>
+    @type forward
+    port 24224
+    bind 0.0.0.0
+</source>
+
+# Logs
+<match log.*>
+    @type copy
+    <store>
+        @type stdout
+    </store>
+
+    <store>
+        @type file
+        path /tmp/fluentd/log
+
+        <parse>
+            @type json
+            time_type string
+            time_format %d/%b/%Y:%H:%M:%S %z
+        </parse>
+
+        <buffer>
+            timekey 1d
+            timekey_use_utc true
+            timekey_wait 10s
+        </buffer>
+    </store>
+</match>
+```
+Δηλώνουμε αρχικά μέσα στo source tag, την πηγή, από που λαμβάνουμε μηνύματα. Στην περίπτωση μας, ορίζουμε τύπο @type forward που δηλώνει TCP σύνδεση, port 24224 για να ακούσουμε στην θύρα 24224, bind 0.0.0.0 (οποιαδήποτε IP). Έχουμε δηλώσει τώρα την πήγη από όπου θα λαμβάνουμε τα δεδομένα.
+
+Έπειτα δηλώνουμε με τo match tag να κοιτάει για log.* tags, όπως τα log.admin, log.client, log.users που έχουμε δηλώσει στο docker-compose.yml σε κάθε service. Δηλώνουμε @type copy για τα πολλαπλά outputs που έχουμε και αρχίζουμε να τα ορίζουμε με store tags, όπως στην πρώτη περίπτωση που ορίζουμε @type stdout και είναι ουσιαστικά για να έχουμε το output στο terminal. 
+
+Στην δεύτερη τώρα περίπτωση δηλώνουμε @type file για τύπο αρχείο, δίνουμε το path στο οποίο θα γίνει η προσωρινή αποθήκευση. Μέσα στο parse tag μετατρέπουμε τα δεδομένα σε json μορφή και βάζουμε extra και ένα timestamp.
+
+Τέλος στην περίπτωση του buffer με το buffer tag ορίζουμε timekey 1d, έχοντας έτσι Synchronous Buffered buffering και flushing mode. Ουσιαστικά κρατάμε τα δεδομένα μιας μέρας που ορίζουμε το με timekey, ορίζουμε UTC ώρα και μετά δηλώνουμε μετά από πότε ένα chunk θα γίνει flush από το fluentd, με timekey_wait. Στην περίπτωση μας μαζεύουμε δεδομένα μιας μέρας και τα κάνουμε flush 10 δευτερόλεπτα μετά.
 
 == Ενότητα Δεύτερη
 === Δημιουργία βάσης δεδομένων(Database replication)
 
+Με τον όρο database replication εννούμε την αντιγραφή των δεδομένων μιας βάσης από έναν υπολογιστή σε έναν άλλον. Στην περίπτωση μας το database replication γίνεται ουσιαστικά όταν περνάμε τα δεδομένα της βάσης μας από τον host μας στο container που θα δημιουργήσουμε. Το σημείο οπού γίνεται αυτό το παρατηρήσαμε και στην πρώτη ενότητα και βρίσκεται μέσα στο Dockerfile:
+```
+FROM mongo
+
+COPY ./init-db.d/seed.js /docker-entrypoint-initdb.d
+```
+
+Ουσιαστικά σε αυτό το σημείο όπως αναφέρθηκε και προηγουμένως, ότι υπάρχει μέσα στο αρχείο seed.js θα περάσει στο /docker-entrypoint-initdb.d και το script μας θα εκτελεστεί κατά το build του Mongo container. Αξίζει να δώσουμε σημασία στην παρακάτω:
+
+NOTE: Warning: scripts in /docker-entrypoint-initdb.d are only run if you start the container with a data directory that is empty; any pre-existing database will be left untouched on container startup.
+
+Άρα το script μας θα εκτελεστεί μόνο εάν το container μας τρέξει χωρίς να περιέχει άλλη βάση πάνω, οπότε είναι καλό για initialization κρατόντας παράλληλα επόμενες αλλαγές στην βάση όταν ξαναγίνει εκκίνηση του container.
+
+Παρακάτω τα περιεχόμενα του seed.js που ουσιαστικά δημιουργεί τα collections που χρειαζόμαστε για την εφαρμογή μας. Αυτό το script θα μπορούσε να τρέξει σε παραπάνω containers και να υπάρχει ουσιαστικά σε περισσότερους servers. Στην περίπτωση μας, θα τρέξει μόνο στο container της mongo βάσης μας.
+```
+db.developers.drop();
+db.developers.insertMany([
+    {_id: "609e4ed023333b00071a324d", name: "Kojima Productions"},
+    {_id: "609e4f4e23333b00071a324f", name: "Ryu Ga Gotoku Studios"},
+    {_id: "609e505623333b00071a3251", name: "Infinity Ward"},
+    {_id: "609e529a23333b00071a3253", name: "Atlus"}
+]);
+
+db.genres.drop();
+db.genres.insertMany([
+    {_id: "609e566423333b00071a3255", name: "SA"},
+    {_id: "609e567823333b00071a3257", name: "RPG"},
+    {_id: "609e568923333b00071a3259", name: "FPS"}
+]);
+
+db.publishers.drop();
+db.publishers.insertMany([
+    {_id: "609e56b723333b00071a325b", name: "KONAMI"},
+    {_id: "609e56ca23333b00071a325d", name: "SEGA"},
+    {_id: "609e56df23333b00071a325f", name: "Activision"}
+]);
+
+db.games.drop();
+db.games.insertMany([
+    {
+        _id: "609e575f23333b00071a3261",
+        title: "Metal Gear Solid 3: Snake Eater",
+        developer: "609e4ed023333b00071a324d",
+        publisher: "609e56b723333b00071a325b",
+        genre: "609e566423333b00071a3255"
+    },
+    {
+        _id: "609e593323333b00071a3263",
+        title: "Yakuza 0",
+        developer: "609e4f4e23333b00071a324f",
+        publisher: "609e56ca23333b00071a325d",
+        genre: "609e567823333b00071a3257"
+    },
+    {
+        _id: "609e59ca23333b00071a3265",
+        title: "Call of Duty: Modern Warfare (2019)",
+        developer: "609e505623333b00071a3251",
+        publisher: "609e56df23333b00071a325f",
+        genre: "609e568923333b00071a3259"
+    },
+    {
+        _id: "609e5a2623333b00071a3267",
+        title: "Persona 4: Golden",
+        developer: "609e529a23333b00071a3253",
+        publisher: "609e56ca23333b00071a325d",
+        genre: "609e567823333b00071a3257"
+    }
+]);
+
+db.users.drop();
+db.users.insertMany([
+    {
+        _id: "609e5b9123333b00071a3269",
+        username: "admin",
+        password: "pass",
+        admin: true,
+        games_owned: {}
+    },
+    {
+        _id: "609e5bc323333b00071a326b",
+        username: "foo",
+        password: "bar",
+        admin: false,
+        games_owned: {}
+    }
+]);
+```
+
 === onEvent αποθήκευση των δεδομένων στην βάση
+
+Η onEvent αποθήκευση των δεδομένων στην βάση αποτελεί επέκταση ουσιαστικά της προσωρινής αποθήκευσης που υλοποιήθηκε στην πρώτη ενότητα. Αρκεί να προσθέσουμε τα παρακάτω:
+```
+<store>
+        @type mongo
+
+        host mongo
+
+        database admin
+        collection logs
+
+        user dbuser
+        password dbpass
+
+        <parse>
+            @type json
+            time_type string
+            time_format %d/%b/%Y:%H:%M:%S %z
+        </parse>
+
+        <buffer>
+            flush_interval 20s
+        </buffer>
+    </store>
+```
+
+Δηλώνουμε μέσα σε store tag, @type mongo μιας και θα πάει σε mongo βάση, έπειτα στο host δηλώνουμε το mongo container μας στο οποίο θα έχουμε τη βάση, ορίζουμε τη βάση δεδομένων και το collection στο οποίο θα αποθηκεύσουμε, δίνουμε όνομα χρήστη και κωδικό της βάσης, κάνουμε parse όπως στην πρώτη ενότητα και τέλος δημιουργούμε buffer και ορίζουμε flush_interval 20s για να κάνει flush ανά 20s.
 
 == Ενότητα Τρίτη
 === Δημιουργία GUI
@@ -424,4 +1007,24 @@ NOTE: REMOVED GAME SCREENSHOT HERE
 
 === Δημιουργία Websocket σύνδεσης με την βάση ή με τις βασικές υπηρεσίες για άμεση μεταφορά των δεδομένων
 
+Η άμεση μεταφορά των δεδομένων στη βάση μας γίνεται μέ τη χρήση της https://github.com/mongo-express/mongo-express[*mongo-express*] που είναι ουσιαστικά web-based admin interface για πιο απλή και ευκολότερη διαχείριση της βάσης δεδομένων μας.
+Η υπηρεσία τρέχει σε δικό της container που έχει οριστεί στο docker-compose.yml ως εξής:
+```
+  mongo-express:
+    image: mongo-express
+    container_name: mongo-express
+    ports:
+      - "8081:8081"
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: dbuser
+      ME_CONFIG_MONGODB_ADMINPASSWORD: dbpass
+    depends_on:
+      - mongo
+    networks:
+      - mongonet
+```
 
+To build γίνεται χρησιμοποιόντας επίσημο έτοιμο image και έπειτα δίνουμε για environment variables το όνομα χρήστη και τον κωδικό της βάσης δεδομένων μας. Προφανώς, depends_on: mongo και ανήκει στο mongonet για επικοινωνία με το mongo container μας.
+
+
+NOTE: mongo express interface screenshot here
