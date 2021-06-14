@@ -1,7 +1,7 @@
 import uuid
 
 from flask import Flask, jsonify, request, g
-from flask_cors import CORS
+from flask_cors import CORS, cross_origin
 from flask_pymongo import PyMongo
 
 # Configuration
@@ -12,7 +12,7 @@ app = Flask(__name__)
 app.config.from_object(__name__)
 
 # Mongodb connection initialization to database gameStore'
-app.config['MONGO_URI'] = "mongodb://datinguser:datinguserpasswd@mongodb:27017/gameStore?authSource=admin"
+app.config['MONGO_URI'] = "mongodb://dbuser:dbpass@mongodb:27017/gameStore?authSource=admin"
 mongo = PyMongo(app)
 
 # Enable CORS (CORS is a library that enables cross-origin requests)
@@ -28,6 +28,7 @@ def ping_pong():
 
 # Routing
 @app.route('/admin', methods=['GET', 'POST'])
+@cross_origin()
 def all_games():
     response_object = {'status': 'success'}
 
@@ -65,6 +66,7 @@ def all_games():
 
 
 @app.route('/admin/<game_id>', methods=['PUT', 'DELETE'])
+@cross_origin()
 def single_game(game_id):
     response_object = {'status': 'success'}
 

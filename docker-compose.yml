@@ -96,8 +96,8 @@ services:
     container_name: mongo-express
     ports:
       - "8081:8081"
-    # User: datinguser
-    # Password: datingpasswd
+    # User: dbuser
+    # Password: dbpass
     environment:
       ME_CONFIG_MONGODB_ADMINUSERNAME: dbuser
       ME_CONFIG_MONGODB_ADMINPASSWORD: dbpass

@@ -8,7 +8,7 @@ Vue.use(VueRouter);
 
 const routes: Array<RouteConfig> = [
   {
-    path: '/admin',
+    path: '/',
     name: 'Admin',
     component: Admin,
   },

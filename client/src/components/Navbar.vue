@@ -27,7 +27,7 @@
               <a class="nav-link" href="/library">Library</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="/admin">Admin</a>
+              <a class="nav-link" href="/">Admin</a>
             </li>
             <li class="nav-item">
               <a class="nav-link" href="/login">Log In</a>
